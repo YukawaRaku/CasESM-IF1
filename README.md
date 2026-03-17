@@ -3,35 +3,40 @@
 
 ## 1. Project Goal and Motivation
 
-This repository implements an end-to-end workflow to adapt **ESM-IF1** for **Cas protein inverse folding** under practical single-GPU constraints (16GB VRAM target).
+This repository implements an end-to-end workflow to adapt **ESM-IF1** for **Cas protein inverse folding**, with a specific focus on structure-conditioned sequence generation for *de novo* protein design.
 
-The biological/computational problem is: given a protein backbone structure, predict amino-acid sequences that are structurally compatible with that backbone. For Cas-family proteins, this is relevant to CRISPR protein design, variant exploration, and structure-conditioned sequence generation workflows (including RFdiffusion outputs).
+The core problem addressed in this project is: given a protein backbone structure, predict amino-acid sequences that are structurally compatible with that backbone. While general inverse folding models such as ESM-IF1 are trained on broad protein structure distributions, they are not specifically biased toward functionally relevant protein families such as Cas proteins.
 
-The gap this project addresses is the lack of a lightweight, reproducible Cas-focused fine-tuning pipeline that is:
+This project focuses on introducing a **Cas-specific structural bias** into the inverse folding process. In particular, it aims to improve sequence generation for backbone structures produced by generative models such as **RFdiffusion**, where the target application is the design of novel Cas-like proteins.
 
-- runnable on limited GPU memory,
-- explicit about preprocessing and split strategy,
-- and evaluated against a frozen baseline (not only training loss).
+The motivation is twofold:
 
-## 2. Why Cas Inverse Folding, Why ESM-IF1, Why LoRA/PEFT
+- Enable **structure-conditioned sequence generation that is more consistent with Cas protein characteristics**, including size, fold patterns, and functional constraints.
+- Increase the feasibility of **de novo Cas protein design**, by bridging generative structure models (e.g., RFdiffusion) with sequence prediction models that are adapted to the Cas protein family.
 
-### Why Cas inverse folding is worth studying
+This repository therefore provides a lightweight but complete pipeline that connects:
 
-- Cas proteins are large, diverse, and high-impact for genome engineering.
-- Sequence design conditioned on structure can support targeted exploration beyond natural sequence neighborhoods.
-- Cas-specific adaptation may improve sequence recovery on Cas-like folds compared with a generic frozen model.
+- structural data acquisition and preprocessing,
+- Cas-focused fine-tuning of an inverse folding model,
+- and downstream sequence generation and evaluation,
 
-### Why ESM-IF1 is used as the base model
+with the goal of making Cas-oriented inverse folding workflows more reproducible and practically usable in protein design settings.
 
-- ESM-IF1 is a pretrained inverse-folding model with established structure-to-sequence capability.
-- This codebase directly integrates `esm_if1_gvp4_t16_142M_UR50` via `esm.pretrained`.
-- It offers a practical starting point for adapting to Cas-focused data without training from scratch.
+## 2. Design Rationale: Cas Adaptation, ESM-IF1, and Parameter-Efficient Fine-Tuning
 
-### Why LoRA/PEFT instead of full fine-tuning
+This project adopts a **structure-conditioned sequence design strategy specialized for Cas proteins**, implemented through the adaptation of a pretrained inverse folding model.
 
-- Full-parameter tuning of ESM-IF1 is memory intensive for long proteins.
-- This project enables LoRA adapters on linear layers while freezing non-LoRA parameters (`freeze_base: true`).
-- Under 16GB VRAM, this design supports mixed precision + gradient accumulation with lower optimizer-state overhead.
+Instead of treating inverse folding as a general protein modeling task, the workflow explicitly introduces a **family-specific inductive bias** toward Cas proteins. Cas proteins exhibit distinct structural and functional characteristics, including large size, modular domains, and conserved nuclease-related motifs. A generic inverse folding model, although broadly trained, does not preferentially model these features. Fine-tuning on Cas-focused structural data therefore shifts the model distribution toward sequences that are more consistent with Cas-like folds and functional constraints.
+
+The base model used is **ESM-IF1 (`esm_if1_gvp4_t16_142M_UR50`)**, a pretrained inverse folding architecture that maps backbone coordinates to amino acid sequences. Leveraging ESM-IF1 provides a strong prior over protein geometry–sequence relationships, allowing this project to focus on **distribution adaptation rather than de novo model training**. This significantly reduces both data requirements and training complexity while preserving general structural reasoning capability.
+
+To make this adaptation practical, the project employs **parameter-efficient fine-tuning (PEFT) via LoRA**. Instead of updating all model parameters, low-rank adaptation modules are inserted into selected linear layers while the pretrained backbone remains frozen. This design has several advantages:
+
+- It preserves the pretrained structural knowledge of ESM-IF1 while introducing targeted modifications specific to Cas proteins.
+- It reduces the number of trainable parameters by orders of magnitude, leading to more stable optimization and lower memory overhead.
+- It minimizes overfitting risks when fine-tuning on a relatively narrow protein family.
+
+Overall, this design balances **model capacity, domain adaptation, and computational efficiency**, enabling effective specialization of a general inverse folding model toward Cas protein design tasks, particularly in workflows coupled with generative backbone models such as RFdiffusion.
 
 ## 3. Actual Training Setup (from config + implementation)
 
@@ -53,13 +58,6 @@ Configuration source: `configs/train_lora.yaml` and `cas_if1/train/engine.py`.
 - Checkpoint strategy: save `last.pt` every epoch; update `best.pt` when validation NLL improves
 - Resume: supported via `--resume`
 
-### 16GB VRAM adaptation strategy
-
-- frozen base + LoRA adapters only
-- mixed precision
-- micro-batch training (`batch_size=1`)
-- gradient accumulation (`grad_accum_steps=8`)
-- sequence length cropping (`max_length=512`)
 
 ## 4. End-to-End Pipeline
 
@@ -164,9 +162,5 @@ Version-sensitive stack for ESM-IF1 inverse folding in practice:
 
 Because `torch-scatter` and `torch-geometric` are tightly coupled to the installed PyTorch/CUDA build, install them with a wheel/index matching your Torch version.
 
-Suggested setup:
 
-1. Install PyTorch matching your CUDA runtime.
-2. Install `torch-scatter` and `torch-geometric` built for that exact Torch/CUDA combination.
-3. Install remaining packages from `requirements.txt`.
 
