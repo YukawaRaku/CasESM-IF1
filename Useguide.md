@@ -61,7 +61,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Stage 1: Acquire Cas Structures
+## Stage 1: Acquire  Structures
 
 The fetch stage queries the RCSB Search API using Cas-related keywords, downloads PDB or mmCIF files, and writes normalized metadata.
 
