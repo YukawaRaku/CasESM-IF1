@@ -37,6 +37,9 @@ To make this adaptation practical, the project employs **parameter-efficient fin
 - It minimizes overfitting risks when fine-tuning on a relatively narrow protein family.
 
 Overall, this design balances **model capacity, domain adaptation, and computational efficiency**, enabling effective specialization of a general inverse folding model toward Cas protein design tasks, particularly in workflows coupled with generative backbone models such as RFdiffusion.
+## Acknowledgements
+
+Parts of this project were developed with the assistance of OpenAI Codex, which contributed to code implementation, debugging, and system design. Final decisions and integration were carried out by the author.
 
 
 
