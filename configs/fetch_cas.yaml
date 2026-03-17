@@ -1,0 +1,18 @@
+keywords:
+  - CRISPR-associated
+  - Cas
+  - Cas9
+  - Cas12
+  - Cas13
+  - Cpf1
+  - Cascade
+  - Csm
+  - Cmr
+  - CRISPR endonuclease
+download_format: cif
+max_results: 1000
+min_length: 80
+max_length: 4000
+deduplicate: true
+request_timeout: 60
+

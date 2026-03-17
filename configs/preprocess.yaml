@@ -1,0 +1,12 @@
+min_length: 60
+max_length: 2048
+max_missing_fraction: 0.2
+split:
+  train: 0.8
+  val: 0.1
+  test: 0.1
+homology:
+  kmer_size: 3
+  jaccard_threshold: 0.55
+seed: 42
+
