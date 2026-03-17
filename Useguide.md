@@ -188,27 +188,7 @@ python scripts/summarize_results.py \
   --output-dir outputs/eval_summary
 ```
 
-## Evaluation Design
 
-This project evaluates more than training loss:
-
-- Negative log-likelihood and perplexity on a held-out test set
-- Native sequence recovery
-- Top-k residue recovery (`k=3` and `k=5`)
-- Baseline frozen ESM-IF1 versus fine-tuned checkpoint
-- Per-family or per-cluster reporting to verify gains are not concentrated in near-duplicates
-- Length-bucket reporting to ensure improvements are not just from short sequences
-
-Cas-specific suggestions included in the code and report:
-
-- stratify by Cas subtype keyword where available, such as `Cas9`, `Cas12`, `Cas13`
-- separately inspect nuclease active-site neighborhoods if curated annotations are added later
-- compare recovery for guide-binding versus non-binding regions once domain annotations are available
-
-## Practical Notes
-
-- The fetch script depends on public RCSB APIs. Large downloads may take time.
-- ESM-IF1 loading depends on `fair-esm`. If the exact upstream API changes, adjust `cas_if1/models/esm_if1.py`.
 - The current split method is an approximate anti-leakage strategy, not a strict structural family split. For a stronger split, replace the k-mer clustering stage with MMseqs2 or Foldseek clusters.
 - For long Cas proteins, training crops sequence windows. Evaluation can use full length or the same crop policy depending on config.
 
