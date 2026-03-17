@@ -1,6 +1,10 @@
 
 # Cas-IF1: Parameter-Efficient Inverse Folding for Cas Proteins
+'''
+This work is part of the Innovation Training Program of China Pharmaceutical University, titled "AI-assisted Discovery and Functional Validation of Novel Cas12 Proteins".
 
+We also gratefully acknowledge the financial support provided for renting computational servers, which enabled the large-scale experiments conducted in this project.
+'''
 ## 1. Project Goal and Motivation
 
 This repository implements an end-to-end workflow to adapt **ESM-IF1** for **Cas protein inverse folding**, with a specific focus on structure-conditioned sequence generation for *de novo* protein design.
